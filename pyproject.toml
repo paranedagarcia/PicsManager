@@ -1,0 +1,13 @@
+[project]
+name = "picsmanager"
+version = "0.1.0"
+description = "Aplicacion Streamlit para redimensionar y comprimir imagenes"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pillow>=10.4.0",
+  "streamlit>=1.45.1",
+]
+
+[tool.uv]
+package = false
