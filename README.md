@@ -1,13 +1,15 @@
 # PicsManager
 
-Aplicacion Streamlit para analizar, redimensionar y convertir imagenes PNG, JPG y WEBP.
+Streamlit app to analize, redimension and convert images to png, jpg and webp.
 
-## Requisitos
+Resize and rename images from a folder or individually.
+
+## Requirements
 
 - `uv`
-- Python 3.11 o superior
+- Python 3.11 r superior
 
-## Uso rapido
+## Use
 
 ```bash
 uv sync
@@ -16,4 +18,4 @@ uv run streamlit run app.py
 
 This app allow:
 
-This app use default folder `home/patricio/pics` and build if no exists.
+This app use default folder `home/username/pics` and build it if no exists.
