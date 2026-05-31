@@ -87,7 +87,7 @@ def load_images_from_folder(folder: str) -> list[ImageSource]:
     if not folder_path.exists():
         folder_path.mkdir(parents=True, exist_ok=True)
     if not folder_path.is_dir():
-        raise ValueError("La carpeta indicada no existe o no es valida.")
+        raise ValueError("This folder does not exist or is not valid.")
 
     sources: list[ImageSource] = []
     for file_path in sorted(folder_path.iterdir()):
@@ -102,7 +102,7 @@ def load_images_from_folder(folder: str) -> list[ImageSource]:
         )
 
     if not sources:
-        raise ValueError("No se encontraron imagenes PNG, JPG o WEBP en la carpeta.")
+        raise ValueError("No PNG, JPG, or WEBP images were found in the folder.")
     return sources
 
 
@@ -162,7 +162,7 @@ def encode_image_bytes(image: Image.Image, output_format: str, quality: int) -> 
         }
         image_to_save = image.convert("RGB") if image.mode == "RGBA" else image
     else:
-        raise ValueError("Formato de salida no soportado.")
+        raise ValueError("Unsupported output format.")
 
     buffer = io.BytesIO()
     image_to_save.save(buffer, format=format_name, **params)
@@ -259,10 +259,10 @@ def generate_preview(source: ImageSource, target_height: int, output_format: str
 
 def quality_help_text(output_format: str) -> str:
     if output_format == "PNG":
-        return "PNG usa compresion sin perdida con optimizacion maxima automatica."
+        return "PNG  uses lossless compression with maximum automatic optimization."
     if output_format == "JPEG":
-        return "JPEG usa compresion con perdida. Calidad alta recomendada entre 85 y 92."
-    return "WEBP equilibra tamano y calidad. Un rango de 80 a 90 suele ser el mejor compromiso."
+        return "JPEG uses lossy compression. High quality recommended between 85 and 92."
+    return "WEBP balances size and quality. A range of 80 to 90 is usually the best compromise."
 
 
 def format_file_size(size_in_bytes: int) -> str:
@@ -314,65 +314,65 @@ def show_processing_feedback() -> None:
         return
 
     st.success(
-        f"Proceso completado. Se generaron {result['generated_count']} imagenes en '{result['output_dir']}'."
+        f"Process completed. {result['generated_count']} images were generated in '{result['output_dir']}'."
     )
     if result["deleted"]:
-        st.warning(f"Originales eliminados: {', '.join(result['deleted'])}")
+        st.warning(f"Originals deleted: {', '.join(result['deleted'])}")
 
 
 def main() -> None:
     st.set_page_config(page_title="PicsManager", page_icon="🖼️", layout="wide")
     st.title("PicsManager")
-    st.write("Redimensiona y comprime imagenes en lote desde archivos subidos o una carpeta local.")
+    st.write("Resize and compress images in batch from uploaded files or a local folder.")
 
     initialize_session_state()
     show_processing_feedback()
 
     with st.sidebar:
-        st.header("Configuracion")
-        if st.button("Limpiar", use_container_width=True):
+        st.header("Configuration")
+        if st.button("Clear", use_container_width=True):
             reset_app_state()
             st.rerun()
 
         target_height = st.number_input(
-            "Altura objetivo (px)",
+            "Target Height (px)",
             min_value=100,
             max_value=8000,
             key="target_height",
             step=10,
         )
         output_format = st.selectbox(
-            "Formato de salida",
+            "Output Format",
             options=list(OUTPUT_FORMATS.keys()),
             key="output_format",
         )
         quality = st.selectbox(
-            "Calidad",
+            "Quality",
             options=list(range(80, 96)),
             key="quality",
             disabled=output_format == "WEBP",
         )
         delete_originals = st.checkbox(
-            "Eliminar originales de carpeta",
+            "Delete originals from folder",
             key="delete_originals",
-            help="Solo aplica a imagenes leidas desde una carpeta local.",
+            help="Only applies to images read from a local folder.",
         )
         st.text_input(
-            "Ruta de salida",
+            "Output Folder",
             key="output_folder",
             placeholder=str(DEFAULT_LOCAL_FOLDER),
-            help="Carpeta donde se guardaran las imagenes procesadas.",
+            help="Folder where the processed images will be saved.",
         )
         st.text_input(
-            "Prefijo de nombre de archivo",
+            "File Name Prefix",
             key="file_prefix",
-            placeholder="prefijo_",
-            help="Prefijo que se añadirá a los nombres de los archivos procesados.",
+            placeholder="prefix_",
+            help="Prefix that will be added to the names of the processed files.",
         )
 
         st.caption(quality_help_text(output_format))
 
-    source_tab, upload_tab = st.tabs(["Carpeta local", "Cargar imagenes"])
+    source_tab, upload_tab = st.tabs(["Local Folder", "Upload Images"])
 
     folder_sources: list[ImageSource] = []
     upload_sources: list[ImageSource] = []
@@ -381,13 +381,13 @@ def main() -> None:
         col1, col2 = st.columns([3, 1])
         with col1:
             folder_path = st.text_input(
-                "Ruta de carpeta",
+                "Folder Path",
                 key="folder_path",
                 placeholder=str(DEFAULT_LOCAL_FOLDER),
             )
         with col2:
             st.write("")
-            if st.button("Seleccionar carpeta"):
+            if st.button("Select Folder"):
                 selected = choose_folder()
                 if selected:
                     previous_source = st.session_state.selected_folder
@@ -401,20 +401,20 @@ def main() -> None:
             st.session_state.selected_folder = folder_path
             try:
                 folder_sources = load_images_from_folder(folder_path)
-                st.success(f"Se cargaron {len(folder_sources)} imagenes desde la carpeta.")
+                st.success(f"Loaded {len(folder_sources)} images from the folder.")
             except ValueError as error:
                 st.error(str(error))
 
     with upload_tab:
         uploaded_files = st.file_uploader(
-            "Selecciona una o varias imagenes",
+            "Select one or more images",
             type=["png", "jpg", "jpeg", "webp"],
             accept_multiple_files=True,
             key=f"uploaded_files_{st.session_state.upload_uploader_key}",
         )
         if uploaded_files:
             upload_sources = load_uploaded_images(uploaded_files)
-            st.success(f"Se cargaron {len(upload_sources)} imagenes desde el navegador.")
+            st.success(f"Loaded {len(upload_sources)} images from the browser.")
 
     output_dir = Path(st.session_state.output_folder).expanduser()
     sources = folder_sources or upload_sources
@@ -424,8 +424,8 @@ def main() -> None:
             st.session_state.preview_image = preview_options[0]
 
         preview_names = ", ".join(source.name for source in sources[:5])
-        extra = "" if len(sources) <= 5 else f" y {len(sources) - 5} mas"
-        st.info(f"Imagenes listas para procesar: {preview_names}{extra}")
+        extra = "" if len(sources) <= 5 else f" and {len(sources) - 5} more"
+        st.info(f"Images ready for processing: {preview_names}{extra}")
 
         giant_images = find_giant_images(sources)
         if giant_images:
@@ -437,19 +437,19 @@ def main() -> None:
             remaining = len(giant_images) - len(warning_lines)
             suffix = ""
             if remaining > 0:
-                suffix = f"\n- y {remaining} imagenes gigantes mas"
+                suffix = f"\n- and {remaining} more giant images"
             st.warning(
-                "Se detectaron imagenes gigantes que superan el umbral de seguridad por defecto de Pillow. "
-                "La app las procesara igualmente, pero pueden consumir bastante memoria.\n"
+                "Giant images were detected that exceed the default Pillow safety threshold. "
+                "The app will process them anyway, but they may consume a lot of memory.\n"
                 + "\n".join(warning_lines)
                 + suffix
             )
 
-        st.subheader("Vista previa antes de guardar")
+        st.subheader("Preview before saving")
         selected_name = st.selectbox(
-            "Imagen para comparar",
+            "Image to compare",
             options=preview_options,
-            help="Se muestran hasta 10 imagenes para previsualizacion rapida.",
+            help="Up to 10 images are shown for quick preview.",
             key="preview_image",
         )
         selected_source = next(
@@ -475,13 +475,13 @@ def main() -> None:
             )
             st.image(preview_bytes, width='stretch')
 
-    if st.button("Procesar imagenes", type="primary", disabled=not sources):
-        progress_bar = st.progress(0, text="Preparando procesamiento...")
+    if st.button("Process Images", type="primary", disabled=not sources):
+        progress_bar = st.progress(0, text="Preparing processing...")
         progress_status = st.empty()
 
         def update_progress(current: int, total: int, name: str) -> None:
-            progress_bar.progress(current / total, text=f"Procesando {current}/{total}: {name}")
-            progress_status.caption(f"Ultima imagen procesada: {name}")
+            progress_bar.progress(current / total, text=f"Processing {current}/{total}: {name}")
+            progress_status.caption(f"Last processed image: {name}")
 
         try:
             generated, deleted = process_images(
@@ -498,7 +498,7 @@ def main() -> None:
             progress_status.empty()
             st.exception(error)
         else:
-            progress_bar.progress(1.0, text="Procesamiento completado")
+            progress_bar.progress(1.0, text="Processing completed")
             load_images_from_folder.clear()
             st.session_state.processing_result = {
                 "generated_count": len(generated),
